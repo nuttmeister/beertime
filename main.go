@@ -13,14 +13,13 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	// "github.com/aws/aws-lambda-go/lambda"
 )
 
 // MusslanBeerTime represents current time according to ISO-B33R and how many hours until next beer time
 // if it's currently not beertime. Otherwise it will be 0.
 type MusslanBeerTime struct {
-	CurrentTime    bool  `json:"currentTime"`
-	TimeToBeerTime int64 `json:"timeToBeerTime"`
+	CurrentBeerTime bool  `json:"currentBeerTime"`
+	NanoToBeerTime  int64 `json:"nanoToBeerTime"`
 }
 
 var (
@@ -47,11 +46,11 @@ func GetMusslanBeerTime(req events.APIGatewayProxyRequest) (events.APIGatewayPro
 	beerTime := isItBeerTime(&now, beerConst)
 
 	if beerTime {
-		return events.APIGatewayProxyResponse{Body: convertBeerTimeToString(&MusslanBeerTime{CurrentTime: true, TimeToBeerTime: 0}), StatusCode: 200, Headers: headers}, nil
+		return events.APIGatewayProxyResponse{Body: convertBeerTimeToString(&MusslanBeerTime{CurrentBeerTime: true, NanoToBeerTime: 0}), StatusCode: 200, Headers: headers}, nil
 	}
 
 	// If it's not musslan beer time just return false.
-	return events.APIGatewayProxyResponse{Body: convertBeerTimeToString(&MusslanBeerTime{CurrentTime: false, TimeToBeerTime: getHoursUntilBeerTime(&now, beerConst)}), StatusCode: 200, Headers: headers}, nil
+	return events.APIGatewayProxyResponse{Body: convertBeerTimeToString(&MusslanBeerTime{CurrentBeerTime: false, NanoToBeerTime: getHoursUntilBeerTime(&now, beerConst)}), StatusCode: 200, Headers: headers}, nil
 }
 
 // getBeerConstant gets the current beer constant. beer constant should be set to either 0 or 1 depending on what
