@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>isitmusslanbeertime.com</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<style>
+		html,
+		body {
+			background: url("beer.jpg") repeat center center fixed;
+			background-size: auto 100%;
+		}
+
+		pos {
+			position: absolute;
+			top: 50%;
+			left: 0;
+			right: 0;
+		}
+
+		curtime {
+			position: absolute;
+			left: 0;
+			right: 0;
+			margin: -140px 0 0 0;
+			text-align: center;
+			color: #ffffff;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 260px;
+			line-height: 227px;
+			font-weight: bold;
+		}
+
+		nanosecs {
+			position: absolute;
+			left: 0;
+			right: 0;
+			text-align: center;
+			color: #ffffff;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 60px;
+			line-height: 227px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<pos>
+		<curtime>false</curtime>
+		<nanosecs></nanosecs>
+	</pos>
+
+	<script>
+		$.ajax({
+			method: "GET",
+			url: "https://api.isitmusslanbeertime.com/time",
+			dataType: "json",
+			success: (resp) => {
+				start(Math.floor(resp.nanoToBeerTime / 1000000));
+			}
+		});
+
+		function start(ms) {
+			let dur = 78;
+			setInterval(() => {
+				ms -= dur;
+				test = Math.floor(Math.random() * 50) + 50;
+				$("nanosecs").html(ms);
+			}, dur);
+		}
+	</script>
+</body>
+
+</html>
