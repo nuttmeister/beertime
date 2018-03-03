@@ -6,6 +6,7 @@
 	<meta charset="UTF-8">
 	<title>isitmusslanbeertime.com</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 	<style>
 		html,
 		body {
@@ -24,12 +25,12 @@
 			position: absolute;
 			left: 0;
 			right: 0;
-			margin: -140px 0 0 0;
+			margin: -20vmin 0 0 0;
 			text-align: center;
 			color: #ffffff;
-			font-family: Arial, Helvetica, sans-serif;
-			font-size: 260px;
-			line-height: 227px;
+			text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+			font-family: "Inconsolata", monospace;
+			font-size: 22vmin;
 			font-weight: bold;
 		}
 
@@ -39,9 +40,9 @@
 			right: 0;
 			text-align: center;
 			color: #ffffff;
-			font-family: Arial, Helvetica, sans-serif;
-			font-size: 60px;
-			line-height: 227px;
+			text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+			font-family: "Inconsolata", monospace;
+			font-size: 4vmin;
 			font-weight: bold;
 		}
 	</style>
@@ -49,7 +50,7 @@
 
 <body>
 	<pos>
-		<curtime>false</curtime>
+		<curtime></curtime>
 		<nanosecs></nanosecs>
 	</pos>
 
@@ -59,16 +60,17 @@
 			url: "https://api.isitmusslanbeertime.com/time",
 			dataType: "json",
 			success: (resp) => {
+				$("curtime").html(resp.currentBeerTime.toString());
 				start(Math.floor(resp.nanoToBeerTime / 1000000));
 			}
 		});
 
 		function start(ms) {
-			let dur = 78;
+			let dur = 137;
 			setInterval(() => {
 				ms -= dur;
-				test = Math.floor(Math.random() * 50) + 50;
-				$("nanosecs").html(ms);
+				test = Math.floor(Math.random() * 50) + 75;
+				$("nanosecs").html(ms + " ms");
 			}, dur);
 		}
 	</script>
