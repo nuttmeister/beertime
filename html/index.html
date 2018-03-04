@@ -5,7 +5,6 @@
 <head>
 	<meta charset="UTF-8">
 	<title>isitmusslanbeertime.com</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 	<style>
 		html,
@@ -34,7 +33,7 @@
 			font-weight: bold;
 		}
 
-		nanosecs {
+		ms {
 			position: absolute;
 			left: 0;
 			right: 0;
@@ -51,28 +50,93 @@
 <body>
 	<pos>
 		<curtime></curtime>
-		<nanosecs></nanosecs>
+		<ms></ms>
 	</pos>
 
 	<script>
-		$.ajax({
-			method: "GET",
-			url: "https://api.isitmusslanbeertime.com/time",
-			dataType: "json",
-			success: (resp) => {
-				$("curtime").html(resp.currentBeerTime.toString());
-				start(Math.floor(resp.nanoToBeerTime / 1000000));
-			}
-		});
+		// Find out if most computers can handle an interval of 71 wihtout lagging behind.
+		// Smaller number means more fluid countdown - but uses more cpu.
+		// Anything less than 81 is probably not plausible.
+		let dur = 81;
+		let counter;
+		let download;
 
-		function start(ms) {
-			let dur = 137;
-			setInterval(() => {
-				ms -= dur;
-				test = Math.floor(Math.random() * 50) + 75;
-				$("nanosecs").html(ms + " ms");
-			}, dur);
+		let beerTime = false;
+		let ms = 0;
+
+		function SetBeer() {
+			return document.getElementsByTagName("curtime")[0].innerHTML = beerTime.toString();
 		}
+
+		function setMs() {
+			if (beerTime) {
+				return document.getElementsByTagName("ms")[0].innerHTML = "";
+			}
+			return document.getElementsByTagName("ms")[0].innerHTML = ms + " ms";
+		}
+
+		function beerTimer() {
+			beerTime = false;
+			if (ms < 1) {
+				beerTime = true;
+				clearInterval(counter);
+			}
+
+			SetBeer();
+			setMs();
+		}
+
+		function nanoToMs(ns) {
+			let result = 0;
+			if (ns > 1000000) {
+				result = Math.floor(ns / 1000000);
+			}
+			return result;
+		}
+
+		function countdown() {
+			ms -= dur;
+			beerTimer();
+		}
+
+		function dlInterval() {
+			let interval = 1800000;
+			if (ms < 3600000) {
+				interval = 300000;
+			}
+			if (ms < 600000) {
+				interval = 60000;
+			}
+			if (ms < 60000) {
+				interval = 10000;
+			}
+
+			if (download) {
+				clearInterval(download);
+			}
+			download = setInterval(dl, interval);
+		}
+
+		function dl() {
+			fetch("https://api.isitmusslanbeertime.com/time")
+				.then(resp => {
+					return resp.json();
+				})
+				.then(resp => {
+					ms = nanoToMs(resp.nanoToBeerTime);
+					beerTimer();
+
+					if (!counter) {
+						counter = setInterval(countdown, dur);
+					}
+					dlInterval();
+				})
+				.catch(error => {
+					return console.log(error);
+				});
+		}
+
+		dl();
 	</script>
 </body>
 
