@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/events" 
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -20,6 +20,7 @@ import (
 type MusslanBeerTime struct {
 	CurrentBeerTime       bool  `json:"currentBeerTime"`
 	UniversalBeerConstant int   `json:"universalBeerConstant"`
+	BaseTimeUTC int64 `json:"baseTimeUTC"`
 	NanoToBeerTime        int64 `json:"nanoToBeerTime"`
 }
 
@@ -50,11 +51,29 @@ func GetMusslanBeerTime(req events.APIGatewayProxyRequest) (events.APIGatewayPro
 	beerTime := isItBeerTime(&now, beerConst)
 
 	if beerTime {
-		return events.APIGatewayProxyResponse{Body: convertBeerTimeToString(&MusslanBeerTime{CurrentBeerTime: true, UniversalBeerConstant: beerConst, NanoToBeerTime: 0}), StatusCode: 200, Headers: headers}, nil
+		return events.APIGatewayProxyResponse{
+			Body: convertBeerTimeToString(&MusslanBeerTime{
+				CurrentBeerTime: true,
+				UniversalBeerConstant: beerConst,
+				BaseTimeUTC: now.UnixNano()
+				NanoToBeerTime: 0
+			}),
+			StatusCode: 200,
+			Headers: headers
+		}, nil
 	}
 
 	// If it's not musslan beer time just return false.
-	return events.APIGatewayProxyResponse{Body: convertBeerTimeToString(&MusslanBeerTime{CurrentBeerTime: false, UniversalBeerConstant: beerConst, NanoToBeerTime: getHoursUntilBeerTime(&now, beerConst)}), StatusCode: 200, Headers: headers}, nil
+	return events.APIGatewayProxyResponse{
+		Body: convertBeerTimeToString(&MusslanBeerTime{
+			CurrentBeerTime: false,
+			UniversalBeerConstant: beerConst,
+			BaseTimeUTC: now.UnixNano()
+			NanoToBeerTime: getNanoUntilBeerTime(&now, beerConst)
+		}),
+		StatusCode: 200,
+		Headers: headers
+	}, nil
 }
 
 // getBeerConstant gets the current beer constant. beer constant should be set to either 0 or 1 depending on what
@@ -102,8 +121,8 @@ func isItBeerTime(now *time.Time, beerConst int) bool {
 	return false
 }
 
-// getHoursUntilBeerTime will return number of nano seconds to next beer time.
-func getHoursUntilBeerTime(now *time.Time, beerConst int) int64 {
+// getNanoUntilBeerTime will return number of nano seconds to next beer time.
+func getNanoUntilBeerTime(now *time.Time, beerConst int) int64 {
 	next := *now
 
 	// Get which week next beertime will be in.
