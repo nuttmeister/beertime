@@ -1,3 +1,4 @@
+// Package beertime is used to represent time in beertime format.
 package beertime
 
 import (
@@ -5,8 +6,15 @@ import (
 )
 
 const (
-	beerConstant      = 1  // The infamous beer constant!
-	beerTimeStartHour = 16 // BeerTime always starts at 16:00.
+	// beerConstant is used to determine if beertime happens
+	// on odd or even weeks.
+	beerConstant = 1
+
+	// beerTimeStartDay determins what day beertime starts on.
+	beerTimeStartDay = time.Friday
+
+	// beerTimeStartHour determins what hour of the day beertime starts.
+	beerTimeStartHour = 16
 )
 
 // Now returns current beertime based on now.
@@ -48,7 +56,7 @@ func isItBeerTime(now time.Time) bool {
 	_, week := now.ISOWeek()
 
 	if isItBeerWeek(week, beerConstant) {
-		if now.Weekday() == time.Friday && now.Hour() >= beerTimeStartHour {
+		if now.Weekday() == beerTimeStartDay && now.Hour() >= beerTimeStartHour {
 			return true
 		}
 	}
@@ -69,7 +77,7 @@ func durUntilBeerTime(now time.Time, beerTime bool) time.Duration {
 
 	// Add the static hour of beer time start (16:00 Europe/Stockholm).
 	// Add number of full days until next beer time.
-	// It will not include the current day and friday,
+	// It will not include the current day and beerTimeStartDay,
 	// since those should be calculated with a duration instead.
 	// Add the reamning time of the current day.
 	next := now.Add(time.Duration(beerTimeStartHour) * time.Hour)
@@ -93,14 +101,14 @@ func remainingDurOfDay(now time.Time) time.Duration {
 func numDaysToBeerTime(now time.Time) int {
 	_, week := now.ISOWeek()
 	if !isItBeerWeek(week, beerConstant) {
-		return 7 + numDaysToFriday(now)
+		return 7 + numDaysToBeerDay(now)
 	}
 
-	return numDaysToFriday(now)
+	return numDaysToBeerDay(now)
 }
 
-// numDaysToFriday returns the number of days until friday from current day.
+// numDaysToBeerDay returns the number of days until beerTimeStartDay from current day.
 // Returns int.
-func numDaysToFriday(now time.Time) int {
-	return int(time.Friday - now.Weekday() - 1)
+func numDaysToBeerDay(now time.Time) int {
+	return int(beerTimeStartDay - now.Weekday() - 1)
 }
