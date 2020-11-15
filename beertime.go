@@ -23,18 +23,6 @@ func Now(now time.Time) bool {
 	return isItBeerTime(now)
 }
 
-// Days returns number of days until next beertime from now.
-// Returns int.
-func Days(now time.Time) int {
-	return numDaysToBeerTime(now)
-}
-
-// Nano returns number of nano seconds until next beertime from now.
-// Returns int64.
-func Nano(now time.Time) int64 {
-	return durUntilBeerTime(now, isItBeerTime(now)).Nanoseconds()
-}
-
 // Duration returns the duration until next beertime from now.
 // Returns time.Duration.
 func Duration(now time.Time) time.Duration {
@@ -43,8 +31,8 @@ func Duration(now time.Time) time.Duration {
 
 // isItBeerWeek returns true if current week is a beer week.
 // Returns bool.
-func isItBeerWeek(week int, beerConst int) bool {
-	if week%2 == beerConst {
+func isItBeerWeek(week int) bool {
+	if week%2 == beerConstant {
 		return true
 	}
 	return false
@@ -55,7 +43,7 @@ func isItBeerWeek(week int, beerConst int) bool {
 func isItBeerTime(now time.Time) bool {
 	_, week := now.ISOWeek()
 
-	if isItBeerWeek(week, beerConstant) {
+	if isItBeerWeek(week) {
 		if now.Weekday() == beerTimeStartDay && now.Hour() >= beerTimeStartHour {
 			return true
 		}
@@ -81,7 +69,7 @@ func durUntilBeerTime(now time.Time, beerTime bool) time.Duration {
 	// since those should be calculated with a duration instead.
 	// Add the reamning time of the current day.
 	next := now.Add(time.Duration(beerTimeStartHour) * time.Hour)
-	next = next.Add(time.Duration(days*24) * time.Hour)
+	next = next.Add(time.Duration((days)*24) * time.Hour)
 	next = next.Add(remaining)
 
 	return next.Sub(now)
@@ -100,8 +88,13 @@ func remainingDurOfDay(now time.Time) time.Duration {
 // Returns int.
 func numDaysToBeerTime(now time.Time) int {
 	_, week := now.ISOWeek()
-	if !isItBeerWeek(week, beerConstant) {
+
+	switch {
+	case !isItBeerWeek(week):
 		return 7 + numDaysToBeerDay(now)
+
+	case isItBeerWeek(week) && now.Weekday() > 4:
+		return 14 + numDaysToBeerDay(now)
 	}
 
 	return numDaysToBeerDay(now)
