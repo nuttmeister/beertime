@@ -1,3 +1,4 @@
+// Package beertime is used to represent time in beertime format.
 package beertime
 
 import (
@@ -5,26 +6,21 @@ import (
 )
 
 const (
-	beerConstant      = 1  // The infamous beer constant!
-	beerTimeStartHour = 16 // BeerTime always starts at 16:00.
+	// beerConstant is used to determine if beertime happens
+	// on odd or even weeks.
+	beerConstant = 1
+
+	// beerTimeStartDay determins what day beertime starts on.
+	beerTimeStartDay = time.Friday
+
+	// beerTimeStartHour determins what hour of the day beertime starts.
+	beerTimeStartHour = 16
 )
 
 // Now returns current beertime based on now.
 // Returns bool.
 func Now(now time.Time) bool {
 	return isItBeerTime(now)
-}
-
-// Days returns number of days until next beertime from now.
-// Returns int.
-func Days(now time.Time) int {
-	return numDaysToBeerTime(now)
-}
-
-// Nano returns number of nano seconds until next beertime from now.
-// Returns int64.
-func Nano(now time.Time) int64 {
-	return durUntilBeerTime(now, isItBeerTime(now)).Nanoseconds()
 }
 
 // Duration returns the duration until next beertime from now.
@@ -35,8 +31,8 @@ func Duration(now time.Time) time.Duration {
 
 // isItBeerWeek returns true if current week is a beer week.
 // Returns bool.
-func isItBeerWeek(week int, beerConst int) bool {
-	if week%2 == beerConst {
+func isItBeerWeek(week int) bool {
+	if week%2 == beerConstant {
 		return true
 	}
 	return false
@@ -47,8 +43,8 @@ func isItBeerWeek(week int, beerConst int) bool {
 func isItBeerTime(now time.Time) bool {
 	_, week := now.ISOWeek()
 
-	if isItBeerWeek(week, beerConstant) {
-		if now.Weekday() == time.Friday && now.Hour() >= beerTimeStartHour {
+	if isItBeerWeek(week) {
+		if now.Weekday() == beerTimeStartDay && now.Hour() >= beerTimeStartHour {
 			return true
 		}
 	}
@@ -69,11 +65,11 @@ func durUntilBeerTime(now time.Time, beerTime bool) time.Duration {
 
 	// Add the static hour of beer time start (16:00 Europe/Stockholm).
 	// Add number of full days until next beer time.
-	// It will not include the current day and friday,
+	// It will not include the current day and beerTimeStartDay,
 	// since those should be calculated with a duration instead.
 	// Add the reamning time of the current day.
 	next := now.Add(time.Duration(beerTimeStartHour) * time.Hour)
-	next = next.Add(time.Duration(days*24) * time.Hour)
+	next = next.Add(time.Duration((days)*24) * time.Hour)
 	next = next.Add(remaining)
 
 	return next.Sub(now)
@@ -92,15 +88,20 @@ func remainingDurOfDay(now time.Time) time.Duration {
 // Returns int.
 func numDaysToBeerTime(now time.Time) int {
 	_, week := now.ISOWeek()
-	if !isItBeerWeek(week, beerConstant) {
-		return 7 + numDaysToFriday(now)
+
+	switch {
+	case !isItBeerWeek(week):
+		return 7 + numDaysToBeerDay(now)
+
+	case isItBeerWeek(week) && now.Weekday() > 4:
+		return 14 + numDaysToBeerDay(now)
 	}
 
-	return numDaysToFriday(now)
+	return numDaysToBeerDay(now)
 }
 
-// numDaysToFriday returns the number of days until friday from current day.
+// numDaysToBeerDay returns the number of days until beerTimeStartDay from current day.
 // Returns int.
-func numDaysToFriday(now time.Time) int {
-	return int(time.Friday - now.Weekday() - 1)
+func numDaysToBeerDay(now time.Time) int {
+	return int(beerTimeStartDay - now.Weekday() - 1)
 }
