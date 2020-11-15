@@ -93,7 +93,7 @@ func numDaysToBeerTime(now time.Time) int {
 	case !isItBeerWeek(week):
 		return 7 + numDaysToBeerDay(now)
 
-	case isItBeerWeek(week) && now.Weekday() > 4:
+	case isItBeerWeek(week) && now.Weekday() > beerTimeStartDay:
 		return 14 + numDaysToBeerDay(now)
 	}
 
