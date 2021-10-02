@@ -14,7 +14,7 @@ const (
 	beerTimeStartDay = time.Friday
 
 	// beerTimeStartHour determins what hour of the day beertime starts.
-	beerTimeStartHour = 16
+	beerTimeStartHour = 15
 )
 
 // Now returns current beertime based on now.
