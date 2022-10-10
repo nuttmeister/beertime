@@ -6,14 +6,10 @@ import (
 )
 
 const (
-	// beerConstant is used to determine if beertime happens
-	// on odd or even weeks.
-	beerConstant = 1
-
-	// beerTimeStartDay determins what day beertime starts on.
+	// beerTimeStartDay determines what day beertime starts on.
 	beerTimeStartDay = time.Friday
 
-	// beerTimeStartHour determins what hour of the day beertime starts.
+	// beerTimeStartHour determines what hour of the day beertime starts.
 	beerTimeStartHour = 15
 )
 
@@ -29,27 +25,10 @@ func Duration(now time.Time) time.Duration {
 	return durUntilBeerTime(now, isItBeerTime(now))
 }
 
-// isItBeerWeek returns true if current week is a beer week.
-// Returns bool.
-func isItBeerWeek(week int) bool {
-	if week%2 == beerConstant {
-		return true
-	}
-	return false
-}
-
 // isItBeerTime will check if it's currently beer time or not.
 // Returns bool.
 func isItBeerTime(now time.Time) bool {
-	_, week := now.ISOWeek()
-
-	if isItBeerWeek(week) {
-		if now.Weekday() == beerTimeStartDay && now.Hour() >= beerTimeStartHour {
-			return true
-		}
-	}
-
-	return false
+	return now.Weekday() == beerTimeStartDay && now.Hour() >= beerTimeStartHour
 }
 
 // durUntilBeerTime will return the duration until next beertime.
@@ -67,7 +46,7 @@ func durUntilBeerTime(now time.Time, beerTime bool) time.Duration {
 	// Add number of full days until next beer time.
 	// It will not include the current day and beerTimeStartDay,
 	// since those should be calculated with a duration instead.
-	// Add the reamning time of the current day.
+	// Add the remaining time of the current day.
 	next := now.Add(time.Duration(beerTimeStartHour) * time.Hour)
 	next = next.Add(time.Duration((days)*24) * time.Hour)
 	next = next.Add(remaining)
@@ -87,14 +66,8 @@ func remainingDurOfDay(now time.Time) time.Duration {
 // numDaysToBeerTime returns the number of full days until next beer time.
 // Returns int.
 func numDaysToBeerTime(now time.Time) int {
-	_, week := now.ISOWeek()
-
-	switch {
-	case !isItBeerWeek(week):
+	if now.Weekday() > beerTimeStartDay {
 		return 7 + numDaysToBeerDay(now)
-
-	case isItBeerWeek(week) && now.Weekday() > beerTimeStartDay:
-		return 14 + numDaysToBeerDay(now)
 	}
 
 	return numDaysToBeerDay(now)
